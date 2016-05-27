@@ -23,6 +23,16 @@ int luaAdd(lua_State *lua_state, int x, int y)
 	return sum;
 }
 
+int cAdd(lua_State* L)
+{
+	//从L栈中取出索引为1的数值，并检查  
+	int x = luaL_checkinteger(L, 1);
+	//从L栈中取出索引为2的数值，并检查  
+	int y = luaL_checkinteger(L, 2);
+	lua_pushnumber(L, x + y);
+	return 1;
+}
+
 int main()
 {
 	lua_State *l = luaL_newstate();
@@ -33,8 +43,25 @@ int main()
 	cout << "5 + 7 = " << luaAdd(l, 5, 7) << endl;
 
 	lua_close(l);
+
+	//初始化全局L
+	lua_State* L;
+	L = luaL_newstate();
+	//打开库  
+	luaL_openlibs(L);
+	//把函数压入栈中  
+	lua_pushcfunction(L, cAdd);
+	//设置全局ADD  
+	lua_setglobal(L, "ADD");
+	luaL_loadfile(L, "test.lua");
+	//安全检查  
+	lua_pcall(L, 0, 0, 0);
+	//push进lua函数  
+	lua_getglobal(L, "test");
+	lua_pcall(L, 0, 0, 0);
+	lua_close(L);
+
 	getchar();
 
     return 0;
 }
-
