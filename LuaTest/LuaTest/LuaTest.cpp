@@ -30,7 +30,7 @@ int main()
 
 	luaL_dofile(l, "main.lua");
 
-	cout << "2 + 1 = " << luaAdd(l, 4, 1) << endl;
+	cout << "5 + 7 = " << luaAdd(l, 5, 7) << endl;
 
 	lua_close(l);
 	getchar();
