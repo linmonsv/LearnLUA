@@ -103,6 +103,15 @@ BOOL CPcscApduTestDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	g_dlg = this;
 
+	FILE* pfile = fopen("./PcscApduTest.script", "rb");
+	if (NULL != pfile)
+	{
+		char szBuf[10000] = "\0";
+		fread(szBuf, 1, 10000, pfile);
+		fclose(pfile);
+		SetDlgItemText(IDC_EDIT_APDU, CString(szBuf));
+	}
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
