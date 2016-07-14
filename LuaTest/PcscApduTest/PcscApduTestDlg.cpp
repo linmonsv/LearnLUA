@@ -381,11 +381,11 @@ void RunApduScript(char *pScript)
 	lua_setglobal(L, "CardApdu");
 	luaL_loadstring(L, pScript);
 	
-	ULONGLONG t1 = GetTickCount64();
+	ULONG t1 = GetTickCount();
 	
 	lua_pcall(L, 0, 0, 0);
 
-	ULONGLONG t2 = GetTickCount64();
+	ULONG t2 = GetTickCount();
 
 	d_printf_edit("\n");
 	d_printf_edit("\n------------------------ time : %d ms ------------------------\n", t2 - t1);
