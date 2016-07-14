@@ -328,6 +328,8 @@ void CPcscApduTestDlg::OnBnClickedButtonRefresh()
 	result = SCardListReaders(g_sc, NULL, (LPTSTR)&pmszReaders, &cch);
 	//d_printf("SCardListReaders result : %d\n", result);
 
+	((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->ResetContent();
+
 	pReader = pmszReaders;
 	while (*pReader != 0)
 	{
@@ -338,6 +340,8 @@ void CPcscApduTestDlg::OnBnClickedButtonRefresh()
 		pReader = pReader + wcslen(pReader) + 1;
 	}
 	SCardFreeMemory(g_sc, pmszReaders);
+
+	SCardReleaseContext(g_sc);
 }
 
 #include <lua.hpp>
@@ -368,7 +372,7 @@ int cCardApdu(lua_State* luaVM)
 	return 0;
 }
 
-void RunScript(char *pScript)
+void RunApduScript(char *pScript)
 {
 	lua_State* L;
 	L = luaL_newstate();
@@ -396,6 +400,9 @@ void CPcscApduTestDlg::OnBnClickedButtonRun()
 	CString str;
 	DWORD dwActiveProtocol;
 
+	result = SCardEstablishContext(SCARD_SCOPE_USER, NULL, NULL, &g_sc);
+	//d_printf("SCardEstablishContext result : %d\n", result);
+
 	((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->GetLBText(((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->GetCurSel(), str);
 
 	result = SCardConnect(g_sc, str, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &g_sh, &dwActiveProtocol);
@@ -421,9 +428,11 @@ void CPcscApduTestDlg::OnBnClickedButtonRun()
 	
 	char szScript[10240] = "\0";
 	w2c(szScript, str_script.GetBuffer(), str_script.GetLength());
-	RunScript(szScript);
+	RunApduScript(szScript);
 
 	result = SCardDisconnect(g_sh, SCARD_LEAVE_CARD);
+
+	SCardReleaseContext(g_sc);
 
 	return;
 }
