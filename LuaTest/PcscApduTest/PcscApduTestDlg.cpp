@@ -183,7 +183,55 @@ void CPcscApduTestDlg::OnBnClickedButtonRefresh()
 	SCardFreeMemory(g_sc, pmszReaders);
 }
 
+#include <lua.hpp>
+
+int l_ConnectCard(lua_State* luaVM)
+{
+	//const char* pText = luaL_checkstring(luaVM, 1);
+
+	
+	return 0;
+}
+
 void CPcscApduTestDlg::OnBnClickedButtonRun()
 {
 	// TODO: Add your control notification handler code here
+	LONG result;
+	CString str;
+	DWORD dwActiveProtocol;
+
+	((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->GetLBText(((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->GetCurSel(), str);
+
+	result = SCardConnect(g_sc, str, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &g_sh, &dwActiveProtocol);
+	//d_printf("SCardConnect result : %d\n", result);
+	if (result)
+	{
+		return ;
+	}
+
+	//LONG result;
+	LPBYTE pbAttr = NULL;
+	DWORD cByte = SCARD_AUTOALLOCATE;
+
+	result = SCardGetAttrib(g_sh, SCARD_ATTR_ATR_STRING, (LPBYTE)&pbAttr, &cByte);
+	//d_printf("SCardConnect result : %d\n", result);
+	if (result)
+	{
+		return;
+	}
+
+	//LONG result;
+	ULONG slen;
+	UCHAR sdat[1024] = "\0";
+	ULONG rlen;
+	UCHAR rdat[1024] = "\0";
+
+	slen = 20;
+	memcpy(sdat, "\x00\xA4\x04\x00\x0E\x32\x50\x41\x59\x2E\x53\x59\x53\x2E\x44\x44\x46\x30\x31\x00", slen);
+	rlen = 1024;
+	result = SCardTransmit(g_sh, SCARD_PCI_T1, sdat, slen, NULL, rdat, &rlen);
+
+	result = SCardDisconnect(g_sh, SCARD_LEAVE_CARD);
+
+	return;
 }
