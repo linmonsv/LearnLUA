@@ -204,6 +204,33 @@ MyAHex(unsigned char* a, unsigned char* hex, int len)
 	}
 	return 0;
 }
+
+char *w2c(char *pcstr, const wchar_t *pwstr, size_t len)
+{
+	int nlength = wcslen(pwstr);
+	//获取转换后的长度
+	int nbytes = WideCharToMultiByte(0, // specify the code page used to perform the conversion
+		0,         // no special flags to handle unmapped characters
+		pwstr,     // wide character string to convert
+		nlength,   // the number of wide characters in that string
+		NULL,      // no output buffer given, we just want to know how long it needs to be
+		0,
+		NULL,      // no replacement character given
+		NULL);    // we don't want to know if a character didn't make it through the translation
+				  // make sure the buffer is big enough for this, making it larger if necessary
+	if (nbytes>len)   nbytes = len;
+	// 通过以上得到的结果，转换unicode 字符为ascii 字符
+	WideCharToMultiByte(0, // specify the code page used to perform the conversion
+		0,         // no special flags to handle unmapped characters
+		pwstr,   // wide character string to convert
+		nlength,   // the number of wide characters in that string
+		pcstr, // put the output ascii characters at the end of the buffer
+		nbytes,                           // there is at least this much space there
+		NULL,      // no replacement character given
+		NULL);
+	return pcstr;
+}
+
 void Printf_Edit(LPVOID lpParam, int controlId, CString AddString)
 {
 	CPcscApduTestDlg *p_dlg;
@@ -282,12 +309,37 @@ void CPcscApduTestDlg::OnBnClickedButtonRefresh()
 
 #include <lua.hpp>
 
-int l_CardApdu(lua_State* luaVM)
+int cCardApdu(lua_State* luaVM)
 {
 	const char *pApdu = luaL_checkstring(luaVM, 1);
 
-	
+	LONG result;
+	ULONG slen;
+	UCHAR sdat[1024] = "\0";
+	ULONG rlen;
+	UCHAR rdat[1024] = "\0";
+
+	d_printf_edit("\n", pApdu);
+
+	slen = strlen(pApdu) / 2;
+	MyAHex((UCHAR *)pApdu, sdat, strlen(pApdu));
+	rlen = 1024;
+	d_printf_hex_note_edit("--->", (char *)sdat, slen);
+	result = SCardTransmit(g_sh, SCARD_PCI_T1, sdat, slen, NULL, rdat, &rlen);
+	d_printf_hex_note_edit("<---", (char *)rdat, rlen);
+
 	return 0;
+}
+
+void RunScript(char *pScript)
+{
+	lua_State* L;
+	L = luaL_newstate();
+	luaL_openlibs(L);
+	lua_pushcfunction(L, cCardApdu);
+	lua_setglobal(L, "CardApdu");
+	luaL_loadstring(L, pScript) || lua_pcall(L, 0, 0, 0);
+	lua_close(L);
 }
 
 void CPcscApduTestDlg::OnBnClickedButtonRun()
@@ -300,7 +352,7 @@ void CPcscApduTestDlg::OnBnClickedButtonRun()
 	((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->GetLBText(((CComboBox *)GetDlgItem(IDC_COMBO_READER_LIST))->GetCurSel(), str);
 
 	result = SCardConnect(g_sc, str, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &g_sh, &dwActiveProtocol);
-	d_printf_edit("SCardConnect result : %d\n", result);
+	//d_printf_edit("SCardConnect result : %d\n", result);
 	if (result)
 	{
 		return ;
@@ -311,24 +363,18 @@ void CPcscApduTestDlg::OnBnClickedButtonRun()
 	DWORD cByte = SCARD_AUTOALLOCATE;
 
 	result = SCardGetAttrib(g_sh, SCARD_ATTR_ATR_STRING, (LPBYTE)&pbAttr, &cByte);
-	d_printf_edit("SCardGetAttrib result : %d\n", result);
+	//d_printf_edit("SCardGetAttrib result : %d\n", result);
 	if (result)
 	{
 		return;
 	}
 
-	//LONG result;
-	ULONG slen;
-	UCHAR sdat[1024] = "\0";
-	ULONG rlen;
-	UCHAR rdat[1024] = "\0";
-
-	slen = 20;
-	memcpy(sdat, "\x00\xA4\x04\x00\x0E\x32\x50\x41\x59\x2E\x53\x59\x53\x2E\x44\x44\x46\x30\x31\x00", slen);
-	rlen = 1024;
-	d_printf_hex_note_edit("--->", (char *)sdat, slen);
-	result = SCardTransmit(g_sh, SCARD_PCI_T1, sdat, slen, NULL, rdat, &rlen);
-	d_printf_hex_note_edit("<---", (char *)rdat, rlen);
+	CString str_script;
+	GetDlgItemText(IDC_EDIT_APDU, str_script);
+	
+	char szScript[1024] = "\0";
+	w2c(szScript, str_script.GetBuffer(), str_script.GetLength());
+	RunScript(szScript);
 
 	result = SCardDisconnect(g_sh, SCARD_LEAVE_CARD);
 
