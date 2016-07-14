@@ -205,6 +205,30 @@ MyAHex(unsigned char* a, unsigned char* hex, int len)
 	return 0;
 }
 
+void RemoveChars(char str[], char remove[])
+{
+	int src, dst, removearray[256];
+	for (src = 0; src < 256; src++)
+	{
+		removearray[src] = 0;
+	}
+	src = 0;
+	while (remove[src])
+	{
+		removearray[remove[src]] = 1;
+		src++;
+	}
+
+	src = dst = 0;
+	do
+	{
+		if (!removearray[str[src]])
+		{
+			str[dst++] = str[src];
+		}
+	} while (str[src++]);
+}
+
 char *w2c(char *pcstr, const wchar_t *pwstr, size_t len)
 {
 	int nlength = wcslen(pwstr);
@@ -319,10 +343,14 @@ int cCardApdu(lua_State* luaVM)
 	ULONG rlen;
 	UCHAR rdat[1024] = "\0";
 
-	d_printf_edit("\n", pApdu);
+	d_printf_edit("\n");
 
-	slen = strlen(pApdu) / 2;
-	MyAHex((UCHAR *)pApdu, sdat, strlen(pApdu));
+	char szApdu[1024] = "\0";
+	strcpy(szApdu, pApdu);
+	RemoveChars(szApdu, " ");
+
+	slen = strlen(szApdu) / 2;
+	MyAHex((UCHAR *)szApdu, sdat, strlen(szApdu));
 	rlen = 1024;
 	d_printf_hex_note_edit("--->", (char *)sdat, slen);
 	result = SCardTransmit(g_sh, SCARD_PCI_T1, sdat, slen, NULL, rdat, &rlen);
