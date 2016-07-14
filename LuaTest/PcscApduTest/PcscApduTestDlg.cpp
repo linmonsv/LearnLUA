@@ -366,7 +366,17 @@ void RunScript(char *pScript)
 	luaL_openlibs(L);
 	lua_pushcfunction(L, cCardApdu);
 	lua_setglobal(L, "CardApdu");
-	luaL_loadstring(L, pScript) || lua_pcall(L, 0, 0, 0);
+	luaL_loadstring(L, pScript);
+	
+	ULONGLONG t1 = GetTickCount64();
+	
+	lua_pcall(L, 0, 0, 0);
+
+	ULONGLONG t2 = GetTickCount64();
+
+	d_printf_edit("\n");
+	d_printf_edit("\n------------------------ time : %d ms ------------------------\n", t2 - t1);
+
 	lua_close(L);
 }
 
@@ -400,7 +410,7 @@ void CPcscApduTestDlg::OnBnClickedButtonRun()
 	CString str_script;
 	GetDlgItemText(IDC_EDIT_APDU, str_script);
 	
-	char szScript[1024] = "\0";
+	char szScript[10240] = "\0";
 	w2c(szScript, str_script.GetBuffer(), str_script.GetLength());
 	RunScript(szScript);
 
