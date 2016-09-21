@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaTest", "LuaTest\LuaTest.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PcscApduTest", "PcscApduTest\PcscApduTest.vcxproj", "{E3071511-E709-491B-998A-2071E1C1E709}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DllTest", "DllTest\DllTest.vcxproj", "{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{E3071511-E709-491B-998A-2071E1C1E709}.Release|x64.Build.0 = Release|x64
 		{E3071511-E709-491B-998A-2071E1C1E709}.Release|x86.ActiveCfg = Release|Win32
 		{E3071511-E709-491B-998A-2071E1C1E709}.Release|x86.Build.0 = Release|Win32
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Debug|x64.ActiveCfg = Debug|x64
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Debug|x64.Build.0 = Debug|x64
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Debug|x86.ActiveCfg = Debug|Win32
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Debug|x86.Build.0 = Debug|Win32
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Release|x64.ActiveCfg = Release|x64
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Release|x64.Build.0 = Release|x64
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Release|x86.ActiveCfg = Release|Win32
+		{3220ABDA-02E4-47EB-8FA5-7DA7354A541B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
